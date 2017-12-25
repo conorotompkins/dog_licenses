@@ -1,17 +1,3 @@
-library(tidyverse)
-library(stringr)
-
-#this lets us remove all the objects from the environment
-#rm(list = ls())
-
-#this adds the csv file to our environment
-doggie_data_raw <- read_csv("data/lifetime-dog-licenses.csv")
-
-colnames(doggie_data_raw) <- tolower(colnames(doggie_data))
-
-#take raw data and remove duplicates
-doggie_data <- doggie_data_raw %>% 
-  filter(!str_detect(licensetype,"Duplicate"))
 
 #This is to create a list of dog count based on breed with filter on breed name
 #mix_names <- doggie_data %>%
@@ -35,11 +21,11 @@ pure_bred_names <- doggie_data %>%
 #This is to get a look at the count of dog breeds that are rare
 rare_breeds <- pure_bred_names %>% 
   filter(n < 2)
-View(rare_breeds)
 
 #This is to get a look at the count of dog breeds that are popular
 popular_breeds <- pure_bred_names %>% 
-  filter(n > 500)
+  filter(n > 50) %>% 
+    arrange(n)
 
 #Counting all the Lidos
 doggie_data %>% 
@@ -48,17 +34,38 @@ doggie_data %>%
   count(breed)
 
 #Creating bar chart NOT graph
-ggplot(popular_breeds, aes(breed,n)) +
-  geom_col()
+popular_breeds %>% 
+  #mutate(breed=as.factor(breed, levels=n)) %>% 
+    ggplot(aes(reorder(breed,n), n)) + geom_col() + coord_flip()
 
 
 #BIG COMMENT: Adding column for group
 
 #Create csv of unique dog breeds
 unique_dog_breeds <- pure_bred_names %>% 
-  top_n(50) %>% 
+  top_n(20) %>% 
     select(breed)
 
 #save csv file to hard drive
-write.csv(unique_dog_breeds, "unique_dog_breeds.csv")
+#write.csv(unique_dog_breeds, "unique_dog_breeds.csv")
 
+#write new object for goups csv
+top_dog_groups <- read_csv("data/unique_breed_names_grouped.csv")
+colnames(top_dog_groups) <- tolower(colnames(top_dog_groups))
+
+#replace Yoy with Toy because CJ is a silly
+top_dog_groups <- top_dog_groups %>% 
+  mutate(group = str_replace(group,"Yoy","Toy"))
+
+#Joining groups with main list (top_dog_groups with doggie_data)
+#doggie_data <- doggie_data %>% 
+  #left_join(top_dog_groups)
+
+#filter out NA's
+#doggie_data <- doggie_data %>%
+    #filter(!is.na(group))
+
+#bar chart for count of dogs in each group
+doggie_data %>%
+  count(group) %>% 
+    ggplot(aes(group,n)) + geom_col() + coord_flip()
