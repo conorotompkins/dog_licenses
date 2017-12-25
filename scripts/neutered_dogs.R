@@ -34,10 +34,13 @@ breed_factor <- top_20_breeds_neutered %>%
 top_20_breeds_neutered <- top_20_breeds_neutered %>% 
   mutate(breed = factor(breed, levels = breed_factor))
   
+
 #graph it, yo
-ggplot(top_20_breeds_neutered,aes(breed,is_neutered)) + geom_col() + coord_flip() + theme_minimal()
+mean_neutered <- mean(top_20_breeds_neutered$is_neutered)
+mean_neutered
 
-
-
-
-
+ggplot(top_20_breeds_neutered,aes(breed,is_neutered)) + 
+  geom_col() + 
+  geom_hline(yintercept = mean_neutered, color = "#E35205", linetype = 1, size = 3) + 
+  coord_flip() + 
+  theme_minimal()
